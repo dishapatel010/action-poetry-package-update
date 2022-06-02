@@ -8,7 +8,7 @@ inputs:
   python-version:
     description: "Python version for the updater"
     required: false
-    default: "3.10"
+    default: "3.8.1"
   poetry-version:
     description: "Poetry version for the updater"
     required: false
@@ -20,7 +20,7 @@ inputs:
   pr-body:
     description: "The body of the pull request"
     required: false
-    default: "Automated changes by [update-python-poetry-packages](https://github.com/Apakottur/action-poetry-package-update) GitHub action"
+    default: "Automated changes by GitHub action"
 runs:
   using: "composite"
   steps:
