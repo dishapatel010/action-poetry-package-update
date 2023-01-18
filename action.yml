@@ -1,5 +1,5 @@
-name: "Update Python Poetry packages"
-author: "@Apakottur"
+name: "Update Python Poetry package"
+author: "@dishapatel010"
 description: "Create a PR that updates Python packages to latest possible versions, based on Poetry configuration files"
 branding:
   icon: chevrons-up
@@ -8,11 +8,11 @@ inputs:
   python-version:
     description: "Python version for the updater"
     required: false
-    default: "3.10"
+    default: "3.11.0"
   poetry-version:
     description: "Poetry version for the updater"
     required: false
-    default: "1.2.2"
+    default: "1.3.2"
   base-branch:
     description: "Git branch on which the updater is run"
     required: false
