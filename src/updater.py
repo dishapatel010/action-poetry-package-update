@@ -49,7 +49,7 @@ def _run_updater_in_path(path: str) -> None:
                     continue
 
                 for details in current_poetry_section.values():
-                    if "path" in details:
+                    if isinstance(details, dict) and "path" in details:
                         file_path_to_deps[file_path.resolve()].append((Path(root) / details["path"] / name).resolve())
 
     # Order the projects based on interdependencies, where dependencies go first.
@@ -110,7 +110,7 @@ def _run_updater_in_path(path: str) -> None:
                 # Replace the old version of the package with the new one.
                 if isinstance(package_details, str):
                     current_poetry_section[original_package_name] = new_version
-                else:
+                elif isinstance(package_details, dict):
                     current_poetry_section[original_package_name]["version"] = new_version
 
         # Write the updated configuration file.
