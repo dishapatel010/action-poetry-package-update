@@ -1,6 +1,7 @@
 import functools
 import os
 from pathlib import Path
+import re
 
 import shpyx
 import tomlkit
@@ -12,6 +13,10 @@ POETRY_CONFIG_FILE_NAME = "pyproject.toml"
 """Sections in the Poetry configuration files where dependencies reside"""
 SECTIONS = ("dependencies", "dev-dependencies")
 
+def is_exact_version(version: str) -> bool:
+    v = version.strip()
+    # Matches "4.8.0", "==4.8.0", "4.13.0", etc (but NOT "^4.8.0" or ">=4.8.0")
+    return bool(re.fullmatch(r"(==)?\d+(\.\d+){1,2}", v))
 
 def _run_updater_in_path(path: str) -> None:
     """
@@ -125,8 +130,8 @@ def _run_updater_in_path(path: str) -> None:
                 else:
                     written_version = package_details["version"]
 
-                # Skip packages that are locked via the '==' operator.
-                if written_version.startswith("=="):
+                # Skip packages that are locked to an exact version (with or without '==')
+                if is_exact_version(written_version):
                     print("Skipping locked package:", package_name)
                     continue
 
@@ -143,7 +148,6 @@ def _run_updater_in_path(path: str) -> None:
 
         # Finally, regenerate the lock file again, with the new package versions.
         shpyx.run("poetry update --lock", exec_dir=file_path.parent)
-
 
 def run_updater(paths: list[str]) -> None:
     for path in paths:
