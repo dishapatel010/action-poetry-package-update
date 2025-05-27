@@ -57,7 +57,7 @@ def _run_updater_in_path(path: str) -> None:
                     continue
 
                 for details in current_section.values():
-                    if "path" in details:
+                    if isinstance(details, dict) and "path" in details:
                         file_path_to_deps[file_path.resolve()].append((Path(root) / details["path"] / name).resolve())
 
     # Order the projects based on interdependencies, where dependencies go first.
@@ -125,23 +125,43 @@ def _run_updater_in_path(path: str) -> None:
                     # The package is not in this section.
                     continue
 
-                if isinstance(package_details, str):  # noqa: SIM108
-                    written_version = package_details
-                else:
-                    written_version = package_details["version"]
+                # --- Robust version handling for string, dict, or list (of dicts/strings) ---
 
-                # Skip packages that are locked to an exact version (with or without '==')
-                if is_exact_version(written_version):
+                versions_to_check = []
+                if isinstance(package_details, str):
+                    versions_to_check = [package_details]
+                elif isinstance(package_details, dict):
+                    versions_to_check = [package_details.get("version")]
+                elif isinstance(package_details, list):
+                    # List of tables or strings (env markers)
+                    versions_to_check = []
+                    for item in package_details:
+                        if isinstance(item, dict):
+                            versions_to_check.append(item.get("version"))
+                        elif isinstance(item, str):
+                            versions_to_check.append(item)
+                else:
+                    print(f"Unknown dependency format for {package_name}, skipping.")
+                    continue
+
+                # If any version is pinned exactly, skip updating this dependency
+                if any(v and is_exact_version(v) for v in versions_to_check):
                     print("Skipping locked package:", package_name)
                     continue
 
                 print(f"Updating {package_name}: {installed_version} -> {new_version}")
 
-                # Replace the old version of the package with the new one.
+                # Update all possible versions in the dependency spec
                 if isinstance(package_details, str):
                     current_section[original_package_name] = new_version
-                else:
+                elif isinstance(package_details, dict):
                     current_section[original_package_name]["version"] = new_version
+                elif isinstance(package_details, list):
+                    for idx, item in enumerate(package_details):
+                        if isinstance(item, dict) and "version" in item:
+                            current_section[original_package_name][idx]["version"] = new_version
+                        elif isinstance(item, str):
+                            current_section[original_package_name][idx] = new_version
 
         # Write the updated configuration file.
         Path(file_path).write_text(parsed_contents.as_string())
