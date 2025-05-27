@@ -1,5 +1,5 @@
-name: "Update Python Poetry packages"
-author: "@Apakottur"
+name: "Update Python Poetry package"
+author: "@dishapatel010"
 description: "Create a PR that updates Python packages to latest possible versions, based on Poetry configuration files"
 branding:
   icon: chevrons-up
